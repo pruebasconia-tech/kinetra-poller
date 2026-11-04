@@ -67,12 +67,12 @@ jobs:
           # Find cross-keychain module (fast, no filesystem scan)
           NPM_ROOT=$(npm root -g)
           CK_DIR="$NPM_ROOT/@virtuals-protocol/acp-cli/node_modules/cross-keychain"
-          if [ ! -f "$CK_DIR/index.js" ]; then
+          if [ ! -f "$CK_DIR/dist/index.js" ]; then
             echo "cross-keychain not found at $CK_DIR, skipping token save"
             exit 0
           fi
           node -e "
-            const { getPassword } = require('$CK_DIR');
+            const { getPassword } = require('$CK_DIR/dist');
             const wallet = process.env.OWNER_WALLET.toLowerCase();
             (async () => {
               try {
