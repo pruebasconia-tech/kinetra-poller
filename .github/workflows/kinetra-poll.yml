@@ -23,15 +23,18 @@ jobs:
       - name: Install ACP CLI
         run: npm install -g @virtuals-protocol/acp-cli
 
-      - name: Configure ACP
+      - name: Configure ACP (headless)
         env:
           ACP_CONFIG_JSON: ${{ secrets.ACP_CONFIG_JSON }}
           ACP_SIGNER_KEYS_JSON: ${{ secrets.ACP_SIGNER_KEYS_JSON }}
+          ACP_ACCESS_TOKEN: ${{ secrets.ACP_ACCESS_TOKEN }}
+          ACP_REFRESH_TOKEN: ${{ secrets.ACP_REFRESH_TOKEN }}
+          ACP_OWNER_WALLET: ${{ secrets.ACP_OWNER_WALLET }}
         run: |
           mkdir -p ~/.config/acp ~/.config/acp-cli
           echo "$ACP_CONFIG_JSON" > ~/.config/acp/config.json
           echo "$ACP_SIGNER_KEYS_JSON" > ~/.config/acp-cli/signer-keys.json
-          export PATH="$HOME/.local/acp/bin:$PATH"
+          acp configure --token "$ACP_ACCESS_TOKEN" --refresh-token "$ACP_REFRESH_TOKEN" --wallet "$ACP_OWNER_WALLET"
           acp agent whoami
 
       - name: Poll for new jobs
