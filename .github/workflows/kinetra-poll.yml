@@ -43,38 +43,6 @@ jobs:
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: bash scripts/poll.sh
 
-      - name: Persist refreshed tokens
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ACP_OWNER_WALLET: ${{ secrets.ACP_OWNER_WALLET }}
-        run: |
-          # Extract current tokens from file backend
-          node <<'NODEEOF' > /tmp/tokens.env
-          const modPath = '/usr/local/lib/node_modules/@virtuals-protocol/acp-cli/node_modules/cross-keychain';
-          const { getPassword } = require(modPath);
-          const wallet = process.env.ACP_OWNER_WALLET.toLowerCase();
-          (async () => {
-            try {
-              const at = await getPassword('acp-auth', 'access-token-' + wallet);
-              const rt = await getPassword('acp-auth', 'refresh-token-' + wallet);
-              if (at) console.log('ACCESS_TOKEN=' + at);
-              if (rt) console.log('REFRESH_TOKEN=' + rt);
-            } catch (e) {
-              console.error('token read error:', e.message);
-            }
-          })();
-          NODEEOF
-          # Update secrets if tokens were extracted
-          if grep -q "ACCESS_TOKEN=" /tmp/tokens.env; then
-            NEW_AT=$(grep "ACCESS_TOKEN=" /tmp/tokens.env | head -1 | cut -d= -f2-)
-            NEW_RT=$(grep "REFRESH_TOKEN=" /tmp/tokens.env | head -1 | cut -d= -f2-)
-            echo "$NEW_AT" | gh secret set ACP_ACCESS_TOKEN --repo ${{ github.repository }}
-            echo "$NEW_RT" | gh secret set ACP_REFRESH_TOKEN --repo ${{ github.repository }}
-            echo "Tokens updated successfully"
-          else
-            echo "No tokens extracted, skipping update"
-          fi
-
       - name: Commit state changes
         run: |
           git config user.name "kinetra-bot"
