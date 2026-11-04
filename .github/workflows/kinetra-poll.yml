@@ -1,0 +1,53 @@
+name: Kinetra Poller
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install ACP CLI
+        run: npm install -g @virtuals-protocol/acp-cli
+
+      - name: Configure ACP
+        env:
+          ACP_CONFIG_JSON: ${{ secrets.ACP_CONFIG_JSON }}
+          ACP_SIGNER_KEYS_JSON: ${{ secrets.ACP_SIGNER_KEYS_JSON }}
+        run: |
+          mkdir -p ~/.config/acp ~/.config/acp-cli
+          echo "$ACP_CONFIG_JSON" > ~/.config/acp/config.json
+          echo "$ACP_SIGNER_KEYS_JSON" > ~/.config/acp-cli/signer-keys.json
+          export PATH="$HOME/.local/acp/bin:$PATH"
+          acp agent whoami
+
+      - name: Poll for new jobs
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: bash scripts/poll.sh
+
+      - name: Commit state changes
+        run: |
+          git config user.name "kinetra-bot"
+          git config user.email "kinetra-bot@users.noreply.github.com"
+          git add state/known_jobs.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update known jobs state"
+            git push
+          fi
