@@ -61,10 +61,16 @@ jobs:
         run: bash scripts/poll.sh
 
       - name: Save refreshed tokens
+        env:
+          OWNER_WALLET: ${{ secrets.ACP_OWNER_WALLET }}
         run: |
-          # Find cross-keychain module
-          CK_PATH=$(find / -path "*cross-keychain" -name "index.js" 2>/dev/null | head -1)
-          CK_DIR=$(dirname "$CK_PATH")
+          # Find cross-keychain module (fast, no filesystem scan)
+          NPM_ROOT=$(npm root -g)
+          CK_DIR="$NPM_ROOT/@virtuals-protocol/acp-cli/node_modules/cross-keychain"
+          if [ ! -f "$CK_DIR/index.js" ]; then
+            echo "cross-keychain not found at $CK_DIR, skipping token save"
+            exit 0
+          fi
           node -e "
             const { getPassword } = require('$CK_DIR');
             const wallet = process.env.OWNER_WALLET.toLowerCase();
@@ -77,7 +83,7 @@ jobs:
                   access_token: at,
                   refresh_token: rt
                 }, null, 2));
-                console.log('Tokens saved');
+                console.log('Tokens saved successfully');
               } catch (e) {
                 console.error('Token save error:', e.message);
               }
