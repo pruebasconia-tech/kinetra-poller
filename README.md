@@ -27,8 +27,9 @@ En GitHub: **Settings → Secrets and variables → Actions → New repository s
 |---|---|---|
 | `ACP_CONFIG_JSON` | Contenido de `~/.config/acp/config.json` | `cat ~/.config/acp/config.json` |
 | `ACP_SIGNER_KEYS_JSON` | Contenido de `~/.config/acp-cli/signer-keys.json` | `cat ~/.config/acp-cli/signer-keys.json` |
-| `TELEGRAM_BOT_TOKEN` | `7737047102:AAFGAcbUCIhOhxSRAOezcT-J4L3xHJISbzc` | Ya lo tienes |
-| `TELEGRAM_CHAT_ID` | `1222225964` | Ya lo tienes |
+| `TELEGRAM_BOT_TOKEN` | Token de tu bot de Telegram | Obtenerlo de @BotFather en Telegram |
+| `TELEGRAM_CHAT_ID` | Tu chat ID de Telegram | Enviar mensaje a @userinfobot |
+```
 
 ### 4. Verificar
 
